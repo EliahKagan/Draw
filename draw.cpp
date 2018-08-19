@@ -35,7 +35,7 @@ namespace {
         void northwest();   // 2
         void southeast();   // 3
         void southwest();   // 4
-        // TODO: 1, 2, 3, 4 are impossible to remember, use something else
+        // TODO: 1, 2, 3, 4 are impossible to remember. Use something else.
 
     private:
         [[nodiscard]] const bool& cell(std::size_t x, std::size_t y) const;
@@ -51,7 +51,7 @@ namespace {
         void move_east();
         void move_west();
 
-        void update(); // currently just marks if the pen is down
+        void update(); // Currently, this just marks (if the pen is down).
 
         std::deque<std::deque<bool>> rows_;
         size_t width_;
