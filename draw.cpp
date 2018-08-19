@@ -31,6 +31,7 @@ namespace {
         void northwest();   // 2
         void southeast();   // 3
         void southwest();   // 4
+        // TODO: 1, 2, 3, 4 are impossible to remember, use something else
 
     private:
         const bool& cell(std::size_t x, std::size_t y) const;
