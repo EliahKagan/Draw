@@ -29,6 +29,9 @@ namespace {
         void west();        // w
 
     private:
+        bool northmost() const noexcept;
+        bool southmost() const noexcept;
+
         const bool& cell(std::size_t x, std::size_t y) const;
         bool& cell(std::size_t x, std::size_t y);
 
