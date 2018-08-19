@@ -1,3 +1,5 @@
+// Very limited turtle graphics program.
+
 #include <cstddef>
 #include <deque>
 #include <iostream>
