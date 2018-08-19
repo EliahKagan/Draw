@@ -54,7 +54,6 @@ namespace {
           bg_{bg}, fg_{fg}, cur_{cur}, pen_{pen}
     {
         if (width == 0) throw std::length_error{"zero-width canvas vanishes"};
-        //rows_.at(y_).at(x_) = cur_;
     }
 
     void Canvas::draw() const // FIXME: rewrite to accommodate representation change
