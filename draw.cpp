@@ -9,6 +9,8 @@
 #include <vector>
 
 namespace {
+    using namespace std::string_literals;
+
     class Canvas {
     public:
         enum class Pen : bool { up, down };
@@ -219,6 +221,17 @@ namespace {
         if (pen_ == Pen::down) mark();
     }
 
+    class AssemblyError : public std::runtime_error {
+    public:
+        explicit AssemblyError(char bad_instruction);
+    };
+
+    AssemblyError::AssemblyError(const char bad_instruction)
+        : runtime_error{"Assembly error: unrecognized instruction: \""s
+                        + bad_instruction + "\""}
+    {
+    }
+
     using Opcode = void (Canvas::*)();
 
     std::vector<Opcode> assemble(const std::string& script)
@@ -240,7 +253,16 @@ namespace {
 
         std::vector<Opcode> ret;
         std::istringstream in {script};
-        for (char ch {}; in >> ch; ) ret.push_back(table.at(ch));
+
+        for (char ch {}; in >> ch; ) {
+            try {
+                ret.push_back(table.at(ch));
+            }
+            catch (const std::out_of_range&) {
+                throw AssemblyError{ch};
+            }
+        }
+        
         return ret;
     }
 }
@@ -261,8 +283,8 @@ int main()
             for (const auto f : assemble(script)) (canvas.*f)();
             canvas.draw();
         }
-        catch (const std::out_of_range& e) { // TODO: use custom exception type
-            std::cerr << "Assembly error: unrecognized instruction\n";
+        catch (const AssemblyError& e) {
+            std::cerr << e.what() << '\n';
         }
     }
 }
