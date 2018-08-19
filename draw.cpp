@@ -49,7 +49,7 @@ int main()
     for (; ; ) {
         std::cout << '\n';
         canvas.draw();
-        std::cout << "\n? " << std::flush;
+        std::cout << "\n? ";
 
         std::string script;
         std::cin >> script;
