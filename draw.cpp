@@ -80,7 +80,7 @@ int main()
         std::cout << "\n? ";
 
         std::string script;
-        std::cin >> script;
+        if (!std::getline(std::cin, script)) break;
         
         // FIXME: run the script!
     }
