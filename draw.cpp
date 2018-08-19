@@ -27,11 +27,12 @@ namespace {
         void south();       // s
         void east();        // e
         void west();        // w
+        void northeast();   // 1
+        void northwest();   // 2
+        void southeast();   // 3
+        void southwest();   // 4
 
     private:
-        bool northmost() const noexcept;
-        bool southmost() const noexcept;
-
         const bool& cell(std::size_t x, std::size_t y) const;
         bool& cell(std::size_t x, std::size_t y);
 
@@ -39,6 +40,11 @@ namespace {
         bool& here();
 
         char peek(std::size_t x, std::size_t y) const;
+
+        void move_north();
+        void move_south();
+        void move_east();
+        void move_west();
 
         void update(); // currently just marks if the pen is down
 
@@ -60,7 +66,7 @@ namespace {
         if (width == 0) throw std::length_error{"zero-width canvas vanishes"};
     }
 
-    void Canvas::draw() const // FIXME: rewrite to accommodate representation change
+    void Canvas::draw() const
     {
         for (std::size_t y {0u}; y != size(rows_); ++y) {
             for (std::size_t x {0u}; x != width_; ++x)
@@ -91,47 +97,55 @@ namespace {
         mark();
     }
 
-    void Canvas::north() // TODO: remove empty bottom row when cursor leaves it
+    void Canvas::north()
     {
-        if (y_ == 0u)
-            rows_.emplace_front(width_);
-        else
-            --y_;
-        
+        move_north();
         update();
     }
 
-    void Canvas::south() // TODO: remove empty top row when cursor leaves it
+    void Canvas::south()
     {
-        if (++y_ == size(rows_))
-            rows_.emplace_back(width_);
-        
+        move_south();
         update();
     }
 
     void Canvas::east()
     {
-        if (x_ == size(rows_) - 1u) {
-            for (auto& row : rows_) {
-                row.pop_front();
-                row.emplace_back();
-            }
-        }
-        else ++x_;
-
+        move_east();
         update();
     }
 
     void Canvas::west()
     {
-        if (x_ == 0u) {
-            for (auto& row : rows_) {
-                row.pop_back();
-                row.emplace_front();
-            }
-        }
-        else --x_;
+        move_west();
+        update();
+    }
 
+    void Canvas::northeast()
+    {
+        move_north();
+        move_east();
+        update();
+    }
+
+    void Canvas::northwest()
+    {
+        move_north();
+        move_west();
+        update();
+    }
+
+    void Canvas::southeast()
+    {
+        move_south();
+        move_east();
+        update();
+    }
+
+    void Canvas::southwest()
+    {
+        move_south();
+        move_west();
         update();
     }
 
@@ -163,6 +177,41 @@ namespace {
         return cell(x, y) ? fg_ : bg_;
     }
 
+    void Canvas::move_north() // TODO: remove empty bottom row when cursor leaves it
+    {
+        if (y_ == 0u)
+            rows_.emplace_front(width_);
+        else
+            --y_;
+    }
+
+    void Canvas::move_south() // TODO: remove empty top row when cursor leaves it
+    {
+        if (++y_ == size(rows_)) rows_.emplace_back(width_);
+    }
+
+    void Canvas::move_east()
+    {
+        if (x_ == width_ - 1u) {
+            for (auto& row : rows_) {
+                row.pop_front();
+                row.emplace_back();
+            }
+        }
+        else ++x_;
+    }
+
+    void Canvas::move_west()
+    {
+        if (x_ == 0u) {
+            for (auto& row : rows_) {
+                row.pop_back();
+                row.emplace_front();
+            }
+        }
+        else --x_;
+    }
+
     inline void Canvas::update()
     {
         if (pen_ == Pen::down) mark();
@@ -180,7 +229,11 @@ namespace {
             {'n', &Canvas::north},
             {'s', &Canvas::south},
             {'e', &Canvas::east},
-            {'w', &Canvas::west}
+            {'w', &Canvas::west},
+            {'1', &Canvas::northeast},
+            {'2', &Canvas::northwest},
+            {'3', &Canvas::southeast},
+            {'4', &Canvas::southwest}
         };
 
         std::vector<Opcode> ret;
@@ -195,17 +248,16 @@ int main()
     std::ios_base::sync_with_stdio(false);
 
     Canvas canvas;
+    canvas.draw();
 
     for (; ; ) {
-        std::cout << '\n';
-        canvas.draw();
-
         std::cout << "\n? ";
         std::string script;
         if (!std::getline(std::cin, script)) break;
         
         try {
             for (const auto f : assemble(script)) (canvas.*f)();
+            canvas.draw();
         }
         catch (const std::out_of_range& e) { // TODO: use custom exception type
             std::cerr << "Assembly error: unrecognized instruction\n";
