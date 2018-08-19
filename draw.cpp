@@ -14,9 +14,22 @@ namespace {
         
         void draw() const;
 
+        // Instructions:       Opcodes:
+        void mark();        // m
+        void clean();       // c
+        void up();          // u
+        void down();        // d
+        void north();       // n
+        void south();       // s
+        void east();        // e
+        void west();        // w
+
     private:
         const bool& cell(std::size_t x, std::size_t y) const;
         bool& cell(std::size_t x, std::size_t y);
+
+        const bool& here() const;
+        bool& here();
 
         char peek(std::size_t x, std::size_t y) const;
 
@@ -49,6 +62,46 @@ namespace {
         }
     }
 
+    void Canvas::mark()
+    {
+        here() = true;
+    }
+
+    void Canvas::clean()
+    {
+        here() = false;
+    }
+
+    void Canvas::up()
+    {
+        pen_ = Pen::up;
+    }
+
+    void Canvas::down()
+    {
+        pen_ = Pen::down();
+    }
+
+    void Canvas::north()
+    {
+        
+    }
+
+    void Canvas::south()
+    {
+
+    }
+
+    void Canvas::east()
+    {
+
+    }
+
+    void Canvas::west()
+    {
+
+    }
+
     inline const bool& Canvas::cell(const std::size_t x,
                                     const std::size_t y) const
     {
@@ -58,6 +111,16 @@ namespace {
     inline bool& Canvas::cell(const std::size_t x, const std::size_t y)
     {
         return rows_.at(y).at(x);
+    }
+
+    inline const bool& Canvas::here() const
+    {
+        return cell(x_, y_);
+    }
+
+    inline bool& Canvas::here()
+    {
+        return cell(x_, y_);
     }
 
     inline char Canvas::peek(const std::size_t x, const std::size_t y) const
