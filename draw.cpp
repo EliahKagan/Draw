@@ -195,24 +195,28 @@ namespace {
 
     void Canvas::move_east()
     {
-        if (x_ == width_ - 1u) {
-            for (auto& row : rows_) {
-                row.pop_front();
-                row.emplace_back();
-            }
+        if (x_ != width_ - 1u) {
+            ++x_;
+            return;
         }
-        else ++x_;
+
+        for (auto& row : rows_) {
+            row.pop_front();
+            row.emplace_back();
+        }
     }
 
     void Canvas::move_west()
     {
-        if (x_ == 0u) {
-            for (auto& row : rows_) {
-                row.pop_back();
-                row.emplace_front();
-            }
+        if (x_ != 0u) {
+            --x_;
+            return;
         }
-        else --x_;
+
+        for (auto& row : rows_) {
+            row.pop_back();
+            row.emplace_front();
+        }
     }
 
     inline void Canvas::update()
