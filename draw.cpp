@@ -224,20 +224,46 @@ namespace {
         if (pen_ == Pen::down) mark();
     }
 
-    class AssemblyError : public std::runtime_error {
+    class TranslationError : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+    class ParsingError : public TranslationError {
+    public:
+        ParsingError();
+    };
+
+    ParsingError::ParsingError() : TranslationError{"Parsing error"}
+    {
+    }
+
+    class AssemblyError : public TranslationError {
     public:
         explicit AssemblyError(char bad_instruction);
     };
 
     AssemblyError::AssemblyError(const char bad_instruction)
-        : runtime_error{"Assembly error: unrecognized instruction: \""s
-                        + bad_instruction + "\""}
+        : TranslationError{"Assembly error: unrecognized instruction: \""s
+                            + bad_instruction + "\""}
     {
     }
 
     using Opcode = void (Canvas::*)();
 
-    [[nodiscard]] std::vector<Opcode> assemble(const std::string& script)
+    unsigned extract_reps(std::istringstream& in)
+    {
+        if (in.get() != '\\') {
+            in.unget();
+            return 1;
+        }
+
+        unsigned ret {};
+        if (!(in >> ret)) throw ParsingError{};
+        return ret;
+    }
+
+    [[nodiscard]] std::vector<Opcode> assemble(std::istringstream& in)
     {
         static const std::unordered_map<char, Opcode> table {
             {'m', &Canvas::mark},
@@ -255,7 +281,6 @@ namespace {
         };
 
         std::vector<Opcode> ret;
-        std::istringstream in {script};
 
         for (char ch {}; in >> ch; ) {
             try {
@@ -281,12 +306,18 @@ int main()
         std::cout << "\n? ";
         std::string script;
         if (!std::getline(std::cin, script)) break;
-        
+
         try {
-            for (const auto f : assemble(script)) (canvas.*f)();
+            std::istringstream in {script};
+            auto reps = extract_reps(in);
+            const auto code = assemble(in);
+
+            while (reps-- != 0u)
+                for (const auto f : code) (canvas.*f)();
+            
             canvas.draw();
         }
-        catch (const AssemblyError& e) {
+        catch (const TranslationError& e) {
             std::cerr << e.what() << '\n';
         }
     }
