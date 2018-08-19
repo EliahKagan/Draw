@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -58,7 +59,7 @@ namespace {
 
     void Canvas::draw() const // FIXME: rewrite to accommodate representation change
     {
-        for (std::size_t y {0u}; y != rows_.size(); ++y) {
+        for (std::size_t y {0u}; y != size(rows_); ++y) {
             for (std::size_t x {0u}; x != width_; ++x)
                 std::cout.put(peek(x, y));
             
@@ -99,7 +100,7 @@ namespace {
 
     void Canvas::south() // TODO: remove empty top row when cursor leaves it
     {
-        if (++y_ == rows_.size())
+        if (++y_ == size(rows_))
             rows_.emplace_back(width_);
         
         update();
@@ -107,7 +108,7 @@ namespace {
 
     void Canvas::east()
     {
-        if (x_ == rows_.size() - 1u) {
+        if (x_ == size(rows_) - 1u) {
             for (auto& row : rows_) {
                 row.pop_front();
                 row.emplace_back();
