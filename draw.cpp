@@ -11,7 +11,7 @@
 namespace {
     class Canvas {
     public:
-        enum class Pen : unsigned char { up, down };
+        enum class Pen : bool { up, down };
 
         explicit Canvas(std::size_t width = 70u, char bg = ' ', char fg = '*',
                         char cur = 'X', Pen pen = Pen::up);
@@ -160,6 +160,7 @@ namespace {
         return rows_.at(y).at(x);
     }
 
+    [[maybe_unused]]
     inline const bool& Canvas::here() const
     {
         return cell(x_, y_);
