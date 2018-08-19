@@ -77,8 +77,8 @@ int main()
     for (; ; ) {
         std::cout << '\n';
         canvas.draw();
-        std::cout << "\n? ";
 
+        std::cout << "\n? ";
         std::string script;
         if (!std::getline(std::cin, script)) break;
         
