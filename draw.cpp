@@ -36,13 +36,13 @@ namespace {
         // TODO: 1, 2, 3, 4 are impossible to remember, use something else
 
     private:
-        const bool& cell(std::size_t x, std::size_t y) const;
-        bool& cell(std::size_t x, std::size_t y);
+        [[nodiscard]] const bool& cell(std::size_t x, std::size_t y) const;
+        [[nodiscard]] bool& cell(std::size_t x, std::size_t y);
 
-        const bool& here() const;
-        bool& here();
+        [[nodiscard, maybe_unused]] const bool& here() const;
+        [[nodiscard]] bool& here();
 
-        char peek(std::size_t x, std::size_t y) const;
+        [[nodiscard]] char peek(std::size_t x, std::size_t y) const;
 
         void move_north();
         void move_south();
@@ -163,7 +163,6 @@ namespace {
         return rows_.at(y).at(x);
     }
 
-    [[maybe_unused]]
     inline const bool& Canvas::here() const
     {
         return cell(x_, y_);
@@ -234,7 +233,7 @@ namespace {
 
     using Opcode = void (Canvas::*)();
 
-    std::vector<Opcode> assemble(const std::string& script)
+    [[nodiscard]] std::vector<Opcode> assemble(const std::string& script)
     {
         static const std::unordered_map<char, Opcode> table {
             {'m', &Canvas::mark},
