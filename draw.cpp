@@ -79,12 +79,12 @@ namespace {
 
     void Canvas::down()
     {
-        pen_ = Pen::down();
+        pen_ = Pen::down;
     }
 
     void Canvas::north()
     {
-        
+
     }
 
     void Canvas::south()
