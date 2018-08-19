@@ -2,7 +2,10 @@
 #include <deque>
 #include <iostream>
 #include <stdexcept>
+#include <sstream>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace {
     class Canvas {
@@ -14,7 +17,7 @@ namespace {
         
         void draw() const;
 
-        // Instructions:       Opcodes:
+        // Instructions:       Names:
         void mark();        // m
         void clean();       // c
         void up();          // u
@@ -161,6 +164,27 @@ namespace {
     {
         if (pen_ == Pen::down) mark();
     }
+
+    using Opcode = void (Canvas::*)();
+
+    std::vector<Opcode> assemble(const std::string& script)
+    {
+        static const std::unordered_map<char, Opcode> table {
+            {'m', &Canvas::mark},
+            {'c', &Canvas::clean},
+            {'u', &Canvas::up},
+            {'d', &Canvas::down},
+            {'n', &Canvas::north},
+            {'s', &Canvas::south},
+            {'e', &Canvas::east},
+            {'w', &Canvas::west}
+        };
+
+        std::vector<Opcode> ret;
+        std::istringstream in {script};
+        for (char ch {}; in >> ch; ) ret.push_back(table.at(ch));
+        return ret;
+    }
 }
 
 int main()
@@ -177,6 +201,12 @@ int main()
         std::string script;
         if (!std::getline(std::cin, script)) break;
         
-        // FIXME: run the script!
+        try {
+            for (const auto f : assemble(script)) (canvas.*f)();
+        }
+        catch (const std::out_of_range& e) { // TODO: use custom exception type
+            std::cerr << "Assembly error: unrecognized instruction\n";
+        }
+
     }
 }
