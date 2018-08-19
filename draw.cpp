@@ -108,19 +108,6 @@ namespace {
 
     void Canvas::east()
     {
-        if (x_ == 0u) {
-            for (auto& row : rows_) {
-                row.pop_back();
-                row.emplace_front();
-            }
-        }
-        else --x_;
-
-        update();
-    }
-
-    void Canvas::west()
-    {
         if (x_ == rows_.size() - 1u) {
             for (auto& row : rows_) {
                 row.pop_front();
@@ -128,6 +115,19 @@ namespace {
             }
         }
         else ++x_;
+
+        update();
+    }
+
+    void Canvas::west()
+    {
+        if (x_ == 0u) {
+            for (auto& row : rows_) {
+                row.pop_back();
+                row.emplace_front();
+            }
+        }
+        else --x_;
 
         update();
     }
@@ -207,6 +207,5 @@ int main()
         catch (const std::out_of_range& e) { // TODO: use custom exception type
             std::cerr << "Assembly error: unrecognized instruction\n";
         }
-
     }
 }
