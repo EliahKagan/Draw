@@ -297,25 +297,29 @@ namespace {
         {"move northwest",          "i7",   &Canvas::northwest},
         {"move southeast",          "l3",   &Canvas::southeast},
         {"move southwest",          "k1",   &Canvas::southwest}
-    } { };
+    } { }
 
     void Assembler::help() const
     {
         constexpr auto margin = "    ";
         const auto doc_heading = "DESCRIPTION"sv;
 
-        auto doc_width = size(doc_heading);
-        for (const auto& instr : instruction_set_)
-            doc_width = std::max(doc_width, size(instr.doc));
+        const auto doc_width = [&]() {
+            auto acc = size(doc_heading);
+            for (const auto& instruction : instruction_set_)
+                acc = std::max(acc, size(instruction.doc));
+            return static_cast<int>(acc);
+        }();
 
         std::cout << margin << std::left << std::setw(doc_width) << doc_heading
                   << margin << "symbol(s)\n\n";
 
-        for (const auto& instr : instruction_set_) {
-            std::cout << margin << std::setw(doc_width) << instr.doc << margin;
+        for (const auto& instruction : instruction_set_) {
+            std::cout << margin << std::setw(doc_width) << instruction.doc;
+            std::cout << margin;
 
             auto sep = "";
-            for (const auto ch : instr.chars) {
+            for (const auto ch : instruction.chars) {
                 std::cout << sep << ch;
                 sep = ", ";
             }
@@ -361,6 +365,8 @@ namespace {
 int main()
 {
     std::ios_base::sync_with_stdio(false);
+
+    Assembler assemble;
 
     Canvas canvas;
     canvas.draw();
