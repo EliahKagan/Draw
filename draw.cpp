@@ -22,7 +22,7 @@ namespace {
 
     // Collects lambdas or other user-defined functors together to produce a new
     // functor with each of them as a separate overload as its call operator.
-    // Facilitates terse, clear calls to std::visit on a std::variant.
+    // Sometimes facilitates terse, clear calls to std::visit on a std::variant.
     // See "overloaded" in http://stroustrup.com/tour2.html, p. 176.
     template<typename... Fs>
     class MultiLambda : public Fs... {
@@ -314,39 +314,62 @@ namespace {
         if (pen_ == Pen::down) mark();
     }
 
+    // Throw this, or a derived exception, when a user-provided script contains
+    // an error that prevents it from being assembled or otherwise used.
     class TranslationError : public std::runtime_error {
     public:
         using std::runtime_error::runtime_error;
     };
 
+    // Throw this when we have no idea what sort of thing the user meant for
+    // their script to do.
     class ParsingError : public TranslationError {
     public:
         ParsingError();
     };
 
+    // Constructs a ParsingError. There is no information to give the user, so
+    // no arguments are accepted.
     ParsingError::ParsingError() : TranslationError{"Parsing error"}
     {
     }
 
+    // Throw this when the user's script had the correct basic syntax but
+    // contained an unrecognized instruction.
     class AssemblyError : public TranslationError {
     public:
         explicit AssemblyError(char bad_instruction);
     };
 
+    // Constructs an AssemblyError from the unrecognized instruction. If there
+    // were mutliple unrecognized instructions, just pass the first one.
     AssemblyError::AssemblyError(const char bad_instruction)
         : TranslationError{"Assembly error: unrecognized instruction: \""s
                             + bad_instruction + "\""}
     {
     }
 
+    // Opcodes are pointers to the public member functions of Canvas. Those
+    // functions comprise its interface. We provide an instruction to allow the
+    // user to call each of them. (But not the Canvas constructor, of course.)
     using Opcode = void (Canvas::*)();
 
+    // Information about an instruction that an Assembler must know.
     struct Instruction {
+        // A brief human-readable summary of what the instruction does.
+        // This is included when an Assembler is printed (to provide help).
         std::string doc;
+
+        // The symbols that denote the instruction. We map them to its opcode.
         std::string chars;
+
+        // Pointer to the public member function of Canvas. This is the target
+        // "format" into which symbols for the instruction are translated.
         Opcode opcode;
     };
 
+    // Translator of one-character symbols into callable "opcodes" (which are
+    // pointers to member functions of Canvas). Also stores help information.
     class Assembler {
     public:
         // Constructs an assembler for a user-specified instruction set.
@@ -359,10 +382,12 @@ namespace {
         [[nodiscard]]
         std::vector<Opcode> operator()(std::istringstream& in) const;
 
-        // Displays the documentation for each instruction.
         friend std::ostream& operator<<(std::ostream& out, const Assembler& as);
 
     private:
+        // All the instructions the assembler accepts. Because we are using so
+        // few instructions, it is reasonable (and probably even faster) to use
+        // a vector for these, rather than some associative container.
         std::vector<Instruction> instruction_set_;
     };
 
@@ -421,6 +446,8 @@ namespace {
         return {doc_heading, static_cast<int>(width)};
     }
 
+    // Outputs a sequence of one or more characters in a readable format.
+    // [Helper function for operator<<(std::ostream&, const Assembler&).]
     void output_chars(std::ostream& out, const std::string_view chars)
     {
         auto sep = "";
@@ -430,6 +457,7 @@ namespace {
         }
     }
 
+    // Displays the documentation for each instruction.
     std::ostream& operator<<(std::ostream& out, const Assembler& as)
     {
         constexpr auto margin = "    ";
@@ -449,11 +477,13 @@ namespace {
         return out;
     }
 
+    // Briefly tells the user how to get help and how to quit the program.
     void show_quick_help()
     {
         std::cerr << "Use \"?\" or \"\\h\" for help, and \"\\q\" to quit.\n";
     }
 
+    // Tells the user how to do perform just about every supported action.
     void show_help(const Assembler& assemble)
     {
         std::cerr << assemble << '\n';
