@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -320,6 +321,19 @@ namespace {
         return ret;
     }
 
+    std::tuple<std::string_view, int>
+    doc_heading_and_width(const std::vector<Instruction>& instruction_set)
+    {
+        const auto doc_heading = "DESCRIPTION"sv;
+
+        auto width = size(doc_heading);
+
+        for (const auto& instruction : instruction_set)
+            width = std::max(width, size(instruction.doc));
+
+        return {doc_heading, static_cast<int>(width)};
+    }
+
     std::ostream& operator<<(std::ostream& out, const Assembler& as)
     {
         constexpr auto margin = "    ";
@@ -333,7 +347,7 @@ namespace {
         }();
 
         out << margin << std::left << std::setw(doc_width) << doc_heading
-            << margin << "symbol(s)\n\n";
+            << margin << "SYMBOL(s)\n\n";
 
         for (const auto& instruction : as.instruction_set_) {
             out << margin << std::setw(doc_width) << instruction.doc << margin;
