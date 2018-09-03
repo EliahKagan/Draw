@@ -380,6 +380,15 @@ namespace {
         return ret;
     }
 
+    void show_help(const Assembler& assemble)
+    {
+        std::cerr << assemble << '\n';
+        std::cerr << "To repeat an instruction N times,"
+                     " put \\N at the beginning of the line.\n";
+        std::cerr << "If the next symbol is also a numeral,"
+                     " type a space (or tab) before it.\n";
+    }
+
     unsigned extract_reps(std::istringstream& in)
     {
         if (in.get() != '\\') {
@@ -415,11 +424,10 @@ int main()
 
     while (auto in = read_script_as_stream()) {
         try {
-            if (help_requested(*in)) {
-                std::cerr << assemble;
-            } else {
+            if (help_requested(*in))
+                show_help(assemble);
+            else
                 interpret_and_run(canvas, assemble, *in);
-            }
         }
         catch (const TranslationError& e) {
             std::cerr << e.what() << '\n';
