@@ -26,8 +26,6 @@ namespace {
         explicit Canvas(std::size_t width = 70u, char bg = ' ', char fg = '*',
                         char cur = 'X', Pen pen = Pen::up);
 
-        void draw() const;
-
         // Instructions:       Names:
         void mark();        // m
         void clean();       // c
@@ -41,6 +39,9 @@ namespace {
         void northwest();   // i, 7
         void southeast();   // l, 3
         void southwest();   // k, 1
+
+        friend std::ostream& operator<<(std::ostream& out,
+                                        const Canvas& canvas);
 
     private:
         [[nodiscard]] const bool& cell(std::size_t x, std::size_t y) const;
@@ -74,16 +75,6 @@ namespace {
           bg_{bg}, fg_{fg}, cur_{cur}, pen_{pen}
     {
         if (width == 0) throw std::length_error{"zero-width canvas vanishes"};
-    }
-
-    void Canvas::draw() const
-    {
-        for (std::size_t y {0u}; y != size(rows_); ++y) {
-            for (std::size_t x {0u}; x != width_; ++x)
-                std::cout.put(peek(x, y));
-
-            std::cout.put('\n');
-        }
     }
 
     void Canvas::mark()
@@ -157,6 +148,18 @@ namespace {
         move_south();
         move_west();
         update();
+    }
+
+    std::ostream& operator<<(std::ostream& out, const Canvas& canvas)
+    {
+        for (std::size_t y {0u}; y != size(canvas.rows_); ++y) {
+            for (std::size_t x {0u}; x != canvas.width_; ++x)
+                out.put(canvas.peek(x, y));
+
+            out.put('\n');
+        }
+
+        return out;
     }
 
     inline const bool& Canvas::cell(const std::size_t x,
@@ -398,7 +401,7 @@ namespace {
         while (reps-- != 0u)
             for (const auto f : code) (canvas.*f)();
 
-        canvas.draw();
+        std::cout << canvas;
     }
 }
 
@@ -408,7 +411,7 @@ int main()
 
     const Assembler assemble;
     Canvas canvas;
-    canvas.draw();
+    std::cout << canvas;
 
     while (auto in = read_script_as_stream()) {
         try {
