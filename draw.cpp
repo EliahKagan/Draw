@@ -389,15 +389,15 @@ namespace {
                      " type a space (or tab) before it.\n";
     }
 
-    unsigned extract_reps(std::istringstream& in)
+    int extract_reps(std::istringstream& in)
     {
         if (in.get() != '\\') {
             in.unget();
             return 1;
         }
 
-        unsigned ret {};
-        if (!(in >> ret)) throw ParsingError{};
+        int ret {};
+        if (!(in >> ret) || ret < 0) throw ParsingError{};
         return ret;
     }
 
@@ -407,7 +407,7 @@ namespace {
         auto reps = extract_reps(in);
         const auto code = assemble(in);
 
-        while (reps-- != 0u)
+        while (reps-- != 0)
             for (const auto f : code) (canvas.*f)();
 
         std::cout << canvas;
