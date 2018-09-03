@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(Draw draw.cpp)
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-c++98-compat -Wno-padded -Wno-exit-time-destructors")
 endif()
 
