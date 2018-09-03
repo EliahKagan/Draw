@@ -20,6 +20,9 @@
 namespace {
     using namespace std::literals;
 
+    // Collects lambdas or other user-defined functors together to produce a new
+    // functor with each of them as a separate overload as its call operator.
+    // Facilitates terse, clear calls to std::visit on a std::variant.
     // See "overloaded" in http://stroustrup.com/tour2.html, p. 176.
     template<typename... Fs>
     class MultiLambda : public Fs... {
@@ -27,56 +30,121 @@ namespace {
         using Fs::operator()...;
     };
 
+    // Deduces base classes from the types of functors passed in aggregate
+    // initialization. (Each of their call operators' signatures should differ.)
     template<typename... Fs>
     MultiLambda(Fs...) -> MultiLambda<Fs...>;
 
+    // A text-based canvas that expands vertically and truncates horizontally.
     class Canvas {
     public:
+        // Pen state. The pen marks automatically when it is put down and when
+        // it is moved in any direction while down.
         enum class Pen : bool { up, down };
 
+        // Constructs a canvas with the specified width (in columns), background
+        // symbol, foreground symbol, current position / cursor sumbol, and pen
+        // state (up or down).
         explicit Canvas(std::size_t width = 70u, char bg = ' ', char fg = '*',
                         char cur = 'X', Pen pen = Pen::up);
 
-        // Instructions:       Names:
-        void mark();        // m
-        void clean();       // c
-        void up();          // u
-        void down();        // d
-        void north();       // n, 8
-        void south();       // s, 2
-        void east();        // e, 6
-        void west();        // w, 4
-        void northeast();   // o, 9
-        void northwest();   // i, 7
-        void southeast();   // l, 3
-        void southwest();   // k, 1
+        // INSTRUCTIONS:                                           NAMES:
+
+        // Makes a dot at the current position.
+        void mark();                                            // m
+
+        // Erases a dot at the current position.
+        void clean();                                           // c
+
+        // Takes the pen up (i.e., stops auto-marking).
+        void up();                                              // u
+
+        // Puts the pen down (i.e, starts auto-marking).
+        void down();                                            // d
+
+        // Moves the pen north (upward on the screen).
+        void north();                                           // n, 8
+
+        // Moves the pen south (downward on the screen).
+        void south();                                           // s, 2
+
+        // Moves the pen east (right on the screen).
+        void east();                                            // e, 6
+
+        // Moves the pen west (left on the screen).
+        void west();                                            // w, 4
+
+        // Moves the pen northeast (up-right on the screen).
+        void northeast();                                       // o, 9
+
+        // Moves the pen northwest (up-left on the screen).
+        void northwest();                                       // i, 7
+
+        // Moves the pen southeast (down-right on the screen).
+        void southeast();                                       // l, 3
+
+        // Moves the pen southwest (down-left on the screen).
+        void southwest();                                       // k, 1
+
+        // ^^^ END OF INSTRUCTIONS ^^^
 
         friend std::ostream& operator<<(std::ostream& out,
                                         const Canvas& canvas);
 
     private:
+        // The cell at the given coordinates (for reading).
         [[nodiscard]] const bool& cell(std::size_t x, std::size_t y) const;
+
+        // The cell at the given coordinates (for reading or writing).
         [[nodiscard]] bool& cell(std::size_t x, std::size_t y);
 
+        // The cell at the current position (for reading).
         [[nodiscard, maybe_unused]] const bool& here() const;
+
+        // The cell at the current position (for reading or writing).
         [[nodiscard]] bool& here();
 
+        // The symbolic representation for the cell at the given coordinates.
         [[nodiscard]] char peek(std::size_t x, std::size_t y) const;
 
+        // Moves north, but does not call any updaters.
         void move_north();
+
+        // Moves south, but does not call any updaters.
         void move_south();
+
+        // Moves east, but does not call any updaters.
         void move_east();
+
+        // Moves west, but does not call any updaters.
         void move_west();
 
-        void update(); // Currently, this just marks (if the pen is down).
+        // Performs whatever actions should be done after each complete change
+        // of cursor position. Currently, this just marks (if the pen is down).
+        void update();
 
+        // The grid holding the pattern recorded on the canvas, stored as rows.
         std::deque<std::deque<bool>> rows_;
+
+        // The width of the canvas, in columns.
         size_t width_;
+
+        // The column that the cursor currently resides in.
         size_t x_;
+
+        // The row that the cursor currently resides in.
         size_t y_;
+
+        // The symbolic representation for unmarked (background) cells.
         char bg_;
+
+        // The symbolic representation for marked (foreground) cells.
         char fg_;
+
+        // The symbolic representation for the cursor itself.
         char cur_;
+
+        // The state the pen is currently in (whether it is up or down).
         Pen pen_;
     };
 
@@ -161,6 +229,7 @@ namespace {
         update();
     }
 
+    // Draws the pattern of foreground dots that are recorded on the canvas.
     std::ostream& operator<<(std::ostream& out, const Canvas& canvas)
     {
         for (std::size_t y {0u}; y != size(canvas.rows_); ++y) {
