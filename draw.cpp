@@ -20,6 +20,16 @@
 namespace {
     using namespace std::literals;
 
+    // See "overloaded" in http://stroustrup.com/tour2.html, p. 176.
+    template<typename... Fs>
+    class MultiLambda : public Fs... {
+    public:
+        using Fs::operator()...;
+    };
+
+    template<typename... Fs>
+    MultiLambda(Fs...) -> MultiLambda<Fs...>;
+
     class Canvas {
     public:
         enum class Pen : bool { up, down };
@@ -380,6 +390,12 @@ namespace {
                      " type a space (or tab) before it.\n";
     }
 
+    [[noreturn]] void quit(const int status, const std::string_view message)
+    {
+        std::cerr << message << '\n';
+        std::exit(status);
+    }
+
     [[nodiscard]] std::optional<std::istringstream> read_script_as_stream()
     {
         std::cerr << "\n? ";
@@ -391,7 +407,7 @@ namespace {
     namespace specials { // TODO: Can these be constexpr?
         const struct HelpTag { } help;
         const struct QuitTag { } quit;
-    };
+    }
 
     [[nodiscard]] std::variant<int, specials::HelpTag, specials::QuitTag>
     extract_reps_or_special_action(std::istringstream& in)
@@ -427,13 +443,8 @@ namespace {
         return ret;
     }
 
-    // FIXME: remove or heavily refactor
-    void interpret_and_run(Canvas& canvas, const Assembler& assemble,
-                           std::istringstream& in)
+    void execute(Canvas& canvas, const std::vector<Opcode>& code, int reps)
     {
-        auto reps = extract_reps(in);
-        const auto code = assemble(in);
-
         while (reps-- != 0)
             for (const auto f : code) (canvas.*f)();
 
@@ -452,14 +463,11 @@ int main()
 
     while (auto in = read_script_as_stream()) {
         try {
-            const auto lede = extract_reps_or_special_action(*in);
-
-            ////
-            if (help_requested(*in)) {
-                show_help(assemble);
-            } else {
-                interpret_and_run(canvas, assemble, *in);
-            }
+            visit(MultiLambda{
+                [&](int reps) { execute(canvas, assemble(*in), reps); },
+                [&](specials::HelpTag) { show_help(assemble); },
+                [](specials::QuitTag) { quit(EXIT_SUCCESS, "Bye!"); }
+            }, extract_reps_or_special_action(*in));
         }
         catch (const TranslationError& e) {
             std::cerr << e.what() << '\n';
