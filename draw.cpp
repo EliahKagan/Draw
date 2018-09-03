@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <optional>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -349,6 +350,21 @@ namespace {
         return ret;
     }
 
+    std::optional<std::istringstream> read_script_as_stream()
+    {
+        std::cout << "\n? ";
+        std::string script;
+        if (getline(std::cin, script)) return std::istringstream{script};
+        return std::nullopt;
+    }
+
+    bool help_requested(std::istringstream& in)
+    {
+        const auto ret = in.get() == '?';
+        in.unget();
+        return ret;
+    }
+
     unsigned extract_reps(std::istringstream& in)
     {
         if (in.get() != '\\') {
@@ -360,6 +376,18 @@ namespace {
         if (!(in >> ret)) throw ParsingError{};
         return ret;
     }
+
+    void interpret_and_run(Canvas& canvas, const Assembler& assemble,
+                           std::istringstream& in)
+    {
+        auto reps = extract_reps(in);
+        const auto code = assemble(in);
+
+        while (reps-- != 0u)
+            for (const auto f : code) (canvas.*f)();
+
+        canvas.draw();
+    }
 }
 
 int main()
@@ -367,24 +395,16 @@ int main()
     std::ios_base::sync_with_stdio(false);
 
     Assembler assemble;
-
     Canvas canvas;
     canvas.draw();
 
-    for (; ; ) {
-        std::cout << "\n? ";
-        std::string script;
-        if (!std::getline(std::cin, script)) break;
-
+    while (auto in = read_script_as_stream()) {
         try {
-            std::istringstream in {script};
-            auto reps = extract_reps(in);
-            const auto code = assemble(in);
-
-            while (reps-- != 0u)
-                for (const auto f : code) (canvas.*f)();
-
-            canvas.draw();
+            if (help_requested(*in)) {
+                assemble.help();
+            } else {
+                interpret_and_run(canvas, assemble, *in);
+            }
         }
         catch (const TranslationError& e) {
             std::cerr << e.what() << '\n';
