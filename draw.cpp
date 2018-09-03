@@ -494,12 +494,15 @@ namespace {
         show_quick_help();
     }
 
+    // Prints a message and quits. Indicates success; don't use this for errors.
     [[noreturn]] void quit(const int status, const std::string_view message)
     {
         std::cerr << message << '\n';
         std::exit(status);
     }
 
+    // Prompts the user and reads a response, returning it as a stringstream to
+    // faciliate parsing. Returns std::nullopt only when stdin is end-of-input.
     [[nodiscard]] std::optional<std::istringstream> read_script_as_stream()
     {
         std::cerr << "\n? ";
