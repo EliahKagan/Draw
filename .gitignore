@@ -1,3 +1,5 @@
 build
 draw.plist
 draw.exe
+draw.obj
+draw.nativecodeanalysis.xml
