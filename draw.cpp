@@ -439,6 +439,8 @@ namespace {
         return ret;
     }
 
+    // Returns the heading and (maximum) width of the column displaying
+    // instructions' documentation strings. (Helper to print Assembler.)
     [[nodiscard]] std::tuple<std::string_view, int>
     doc_heading_and_width(const std::vector<Instruction>& instruction_set)
     {
@@ -452,8 +454,7 @@ namespace {
         return {doc_heading, static_cast<int>(width)};
     }
 
-    // Outputs a sequence of one or more characters in a readable format.
-    // [Helper function for operator<<(std::ostream&, const Assembler&).]
+    // Lists one or more characters separately. (Helper to print Assembler.)
     void output_chars(std::ostream& out, const std::string_view chars)
     {
         auto sep = "";
