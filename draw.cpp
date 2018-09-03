@@ -19,7 +19,7 @@ namespace {
 
         explicit Canvas(std::size_t width = 70u, char bg = ' ', char fg = '*',
                         char cur = 'X', Pen pen = Pen::up);
-        
+
         void draw() const;
 
         // Instructions:       Names:
@@ -31,10 +31,10 @@ namespace {
         void south();       // s
         void east();        // e
         void west();        // w
-        void northeast();   // 1
-        void northwest();   // 2
-        void southeast();   // 3
-        void southwest();   // 4
+        void northeast();   // o
+        void northwest();   // i
+        void southeast();   // l
+        void southwest();   // k
         // TODO: 1, 2, 3, 4 are impossible to remember. Use something else.
 
     private:
@@ -76,7 +76,7 @@ namespace {
         for (std::size_t y {0u}; y != size(rows_); ++y) {
             for (std::size_t x {0u}; x != width_; ++x)
                 std::cout.put(peek(x, y));
-            
+
             std::cout.put('\n');
         }
     }
@@ -276,10 +276,10 @@ namespace {
             {'s', &Canvas::south},
             {'e', &Canvas::east},
             {'w', &Canvas::west},
-            {'1', &Canvas::northeast},
-            {'2', &Canvas::northwest},
-            {'3', &Canvas::southeast},
-            {'4', &Canvas::southwest}
+            {'o', &Canvas::northeast},
+            {'i', &Canvas::northwest},
+            {'l', &Canvas::southeast},
+            {'k', &Canvas::southwest}
         };
 
         std::vector<Opcode> ret;
@@ -292,7 +292,7 @@ namespace {
                 throw AssemblyError{ch};
             }
         }
-        
+
         return ret;
     }
 }
@@ -316,7 +316,7 @@ int main()
 
             while (reps-- != 0u)
                 for (const auto f : code) (canvas.*f)();
-            
+
             canvas.draw();
         }
         catch (const TranslationError& e) {
