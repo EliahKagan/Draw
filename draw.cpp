@@ -378,7 +378,7 @@ namespace {
 
     void show_quick_help()
     {
-        std::cerr << "Use \"?\" or \"\\h\" for help, and \\q to quit.\n\n";
+        std::cerr << "Use \"?\" or \"\\h\" for help, and \\q to quit.\n";
     }
 
     void show_help(const Assembler& assemble)
@@ -457,7 +457,10 @@ int main()
     std::ios_base::sync_with_stdio(false);
 
     const Assembler assemble;
+
     show_quick_help();
+    std::cerr << '\n';
+
     Canvas canvas;
     std::cout << canvas;
 
