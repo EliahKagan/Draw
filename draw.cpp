@@ -511,7 +511,7 @@ namespace {
         return std::nullopt;
     }
 
-    namespace specials { // TODO: Can these be constexpr?
+    namespace specials {
         constexpr struct HelpTag { } help;
         constexpr struct QuitTag { } quit;
     }
