@@ -491,6 +491,7 @@ namespace {
                      " put \\N at the beginning of the line.\n";
         std::cerr << "If the next symbol is also a numeral,"
                      " type a space (or tab) before it.\n";
+        show_quick_help();
     }
 
     [[noreturn]] void quit(const int status, const std::string_view message)
