@@ -190,7 +190,7 @@ namespace {
         return cell(x, y) ? fg_ : bg_;
     }
 
-    void Canvas::move_north() // TODO: remove empty bottom row when cursor leaves it
+    void Canvas::move_north()
     {
         if (y_ == 0u)
             rows_.emplace_front(width_);
@@ -198,7 +198,7 @@ namespace {
             --y_;
     }
 
-    void Canvas::move_south() // TODO: remove empty top row when cursor leaves it
+    void Canvas::move_south()
     {
         if (++y_ == size(rows_)) rows_.emplace_back(width_);
     }
