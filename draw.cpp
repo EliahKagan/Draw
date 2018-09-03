@@ -501,7 +501,7 @@ namespace {
         show_quick_help();
     }
 
-    // Prints a message and quits. Indicates success; don't use this for errors.
+    // Prints a message and quits with a specified exit status.
     [[noreturn]] void quit(const int status, const std::string_view message)
     {
         std::cerr << message << '\n';
