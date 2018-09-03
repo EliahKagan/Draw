@@ -1,17 +1,21 @@
 // Very limited turtle graphics program.
 
+#include <algorithm>
 #include <cstddef>
 #include <deque>
+#include <initializer_list>
+#include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <stdexcept>
 #include <sstream>
 #include <string>
-#include <unordered_map>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 namespace {
-    using namespace std::string_literals;
+    using namespace std::literals;
 
     class Canvas {
     public:
@@ -27,14 +31,14 @@ namespace {
         void clean();       // c
         void up();          // u
         void down();        // d
-        void north();       // n
-        void south();       // s
-        void east();        // e
-        void west();        // w
-        void northeast();   // o
-        void northwest();   // i
-        void southeast();   // l
-        void southwest();   // k
+        void north();       // n, 8
+        void south();       // s, 2
+        void east();        // e, 6
+        void west();        // w, 4
+        void northeast();   // o, 9
+        void northwest();   // i, 7
+        void southeast();   // l, 3
+        void southwest();   // k, 1
 
     private:
         [[nodiscard]] const bool& cell(std::size_t x, std::size_t y) const;
@@ -252,6 +256,95 @@ namespace {
 
     using Opcode = void (Canvas::*)();
 
+    struct Instruction {
+        std::string doc;
+        std::string chars;
+        Opcode opcode;
+    };
+
+    class Assembler {
+    public:
+        // Constructs an assembler for a user-specified instruction set.
+        Assembler(std::initializer_list<Instruction> init);
+
+        // Constructs an assembler with the default instruction set.
+        Assembler();
+
+        // Displays the documentation for each instruction.
+        void help() const;
+
+        // Reads "assembly language" from an input stream and assembles it.
+        [[nodiscard]]
+        std::vector<Opcode> operator()(std::istringstream& in) const;
+
+    private:
+        std::vector<Instruction> instruction_set_;
+    };
+
+    Assembler::Assembler(const std::initializer_list<Instruction> init)
+        : instruction_set_(init) { }
+
+    Assembler::Assembler() : Assembler{
+        {"Mark the canvas here",    "m",    &Canvas::mark},
+        {"Clean any mark here",     "c",    &Canvas::clean},
+        {"take the pen Up",         "u",    &Canvas::up},
+        {"put the pen Down",        "d",    &Canvas::down},
+        {"move North",              "n8",   &Canvas::north},
+        {"move South",              "s2",   &Canvas::south},
+        {"move East",               "e6",   &Canvas::east},
+        {"move West",               "w4",   &Canvas::west},
+        {"move northeast",          "o9",   &Canvas::northeast},
+        {"move northwest",          "i7",   &Canvas::northwest},
+        {"move southeast",          "l3",   &Canvas::southeast},
+        {"move southwest",          "k1",   &Canvas::southwest}
+    } { };
+
+    void Assembler::help() const
+    {
+        constexpr auto margin = "    ";
+        const auto doc_heading = "DESCRIPTION"sv;
+
+        auto doc_width = size(doc_heading);
+        for (const auto& instr : instruction_set_)
+            doc_width = std::max(doc_width, size(instr.doc));
+
+        std::cout << margin << std::left << std::setw(doc_width) << doc_heading
+                  << margin << "symbol(s)\n\n";
+
+        for (const auto& instr : instruction_set_) {
+            std::cout << margin << std::setw(doc_width) << instr.doc << margin;
+
+            auto sep = "";
+            for (const auto ch : instr.chars) {
+                std::cout << sep << ch;
+                sep = ", ";
+            }
+
+            std::cout << '\n';
+        }
+    }
+
+    std::vector<Opcode> Assembler::operator()(std::istringstream& in) const
+    {
+        std::vector<Opcode> ret;
+
+        const auto first = cbegin(instruction_set_);
+        const auto last = cend(instruction_set_);
+
+        for (char ch {}; in >> ch; ) {
+            const auto p = std::find_if(first, last,
+                                        [ch](const Instruction& instr) {
+                return instr.chars.find(ch) != instr.chars.npos;
+            });
+
+            if (p == last) throw AssemblyError{ch};
+
+            ret.push_back(p->opcode);
+        }
+
+        return ret;
+    }
+
     unsigned extract_reps(std::istringstream& in)
     {
         if (in.get() != '\\') {
@@ -261,37 +354,6 @@ namespace {
 
         unsigned ret {};
         if (!(in >> ret)) throw ParsingError{};
-        return ret;
-    }
-
-    [[nodiscard]] std::vector<Opcode> assemble(std::istringstream& in)
-    {
-        static const std::unordered_map<char, Opcode> table {
-            {'m', &Canvas::mark},
-            {'c', &Canvas::clean},
-            {'u', &Canvas::up},
-            {'d', &Canvas::down},
-            {'n', &Canvas::north},
-            {'s', &Canvas::south},
-            {'e', &Canvas::east},
-            {'w', &Canvas::west},
-            {'o', &Canvas::northeast},
-            {'i', &Canvas::northwest},
-            {'l', &Canvas::southeast},
-            {'k', &Canvas::southwest}
-        };
-
-        std::vector<Opcode> ret;
-
-        for (char ch {}; in >> ch; ) {
-            try {
-                ret.push_back(table.at(ch));
-            }
-            catch (const std::out_of_range&) {
-                throw AssemblyError{ch};
-            }
-        }
-
         return ret;
     }
 }
