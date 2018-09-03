@@ -511,11 +511,18 @@ namespace {
         return std::nullopt;
     }
 
+    // Special actions a leading backslash may prefix (if not for repetition).
     namespace specials {
+        // Designates that the full help message should be printed.
         constexpr struct HelpTag { } help;
+
+        // Designates that the program should be quit.
         constexpr struct QuitTag { } quit;
     }
 
+    // Interprets leading-backslash notation, which the user may use to provide
+    // a custom repetition count for the instructions int he rest of their
+    // script, or to view the full help message or quit the program.
     [[nodiscard]] std::variant<int, specials::HelpTag, specials::QuitTag>
     extract_reps_or_special_action(std::istringstream& in)
     {
@@ -550,6 +557,7 @@ namespace {
         return ret;
     }
 
+    // Execute assembled opcodes on a canvas a specified number of times.
     void execute(Canvas& canvas, const std::vector<Opcode>& code, int reps)
     {
         while (reps-- != 0)
@@ -559,6 +567,7 @@ namespace {
     }
 }
 
+// Provides a REPL that displays the canvas except when there is an error.
 int main()
 {
     std::ios_base::sync_with_stdio(false);
