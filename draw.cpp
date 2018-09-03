@@ -298,7 +298,9 @@ namespace {
     };
 
     Assembler::Assembler(const std::initializer_list<Instruction> init)
-        : instruction_set_(init) { }
+        : instruction_set_(init)
+    {
+    }
 
     Assembler::Assembler() : Assembler{
         {"Mark the canvas here",    "m",    &Canvas::mark},
@@ -312,7 +314,9 @@ namespace {
         {"move northeast",          "o9",   &Canvas::northeast},
         {"move northwest",          "i7",   &Canvas::northwest},
         {"move southeast",          "l3",   &Canvas::southeast},
-        {"move southwest",          "k1",   &Canvas::southwest}} { }
+        {"move southwest",          "k1",   &Canvas::southwest}}
+    {
+    }
 
     std::vector<Opcode> Assembler::operator()(std::istringstream& in) const
     {
@@ -405,8 +409,8 @@ namespace {
     }
 
     namespace specials { // TODO: Can these be constexpr?
-        const struct HelpTag { } help;
-        const struct QuitTag { } quit;
+        constexpr struct HelpTag { } help;
+        constexpr struct QuitTag { } quit;
     }
 
     [[nodiscard]] std::variant<int, specials::HelpTag, specials::QuitTag>
@@ -467,7 +471,7 @@ int main()
     while (auto in = read_script_as_stream()) {
         try {
             visit(MultiLambda{
-                [&](int reps) { execute(canvas, assemble(*in), reps); },
+                [&](const int reps) { execute(canvas, assemble(*in), reps); },
                 [&](specials::HelpTag) { show_help(assemble); },
                 [](specials::QuitTag) { quit(EXIT_SUCCESS, "Bye!"); }
             }, extract_reps_or_special_action(*in));
