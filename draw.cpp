@@ -365,6 +365,20 @@ namespace {
         return out;
     }
 
+    void show_quick_help()
+    {
+        std::cerr << "Use \"?\" or \"\\h\" for help, and \\q to quit.\n";
+    }
+
+    void show_help(const Assembler& assemble)
+    {
+        std::cerr << assemble << '\n';
+        std::cerr << "To repeat an instruction N times,"
+                     " put \\N at the beginning of the line.\n";
+        std::cerr << "If the next symbol is also a numeral,"
+                     " type a space (or tab) before it.\n";
+    }
+
     std::optional<std::istringstream> read_script_as_stream()
     {
         std::cerr << "\n? ";
@@ -378,15 +392,6 @@ namespace {
         const auto ret = in.get() == '?';
         in.unget();
         return ret;
-    }
-
-    void show_help(const Assembler& assemble)
-    {
-        std::cerr << assemble << '\n';
-        std::cerr << "To repeat an instruction N times,"
-                     " put \\N at the beginning of the line.\n";
-        std::cerr << "If the next symbol is also a numeral,"
-                     " type a space (or tab) before it.\n";
     }
 
     int extract_reps(std::istringstream& in)
@@ -419,6 +424,7 @@ int main()
     std::ios_base::sync_with_stdio(false);
 
     const Assembler assemble;
+    show_quick_help();
     Canvas canvas;
     std::cout << canvas;
 
@@ -431,6 +437,7 @@ int main()
         }
         catch (const TranslationError& e) {
             std::cerr << e.what() << '\n';
+            show_quick_help();
         }
     }
 }
