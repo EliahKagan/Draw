@@ -320,7 +320,12 @@ namespace {
     class TranslationError : public std::runtime_error {
     public:
         using std::runtime_error::runtime_error;
+
+        // Just makes the class abstract. (No special cleanup needed.)
+        ~TranslationError() override = 0;
     };
+
+    TranslationError::~TranslationError() = default;
 
     // Throw this when we have no idea what sort of thing the user means for
     // their script to do.
