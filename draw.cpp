@@ -314,28 +314,29 @@ namespace {
         if (pen_ == Pen::down) mark();
     }
 
-    // Throw this, or a derived exception, when a user-provided script contains
-    // an error that prevents it from being assembled or otherwise used.
+    // Abstract base class for exceptions to throw when a user-provided script
+    // contains an error that prevents it from being assembled or otherwise
+    // used.
     class TranslationError : public std::runtime_error {
     public:
         using std::runtime_error::runtime_error;
     };
 
-    // Throw this when we have no idea what sort of thing the user meant for
+    // Throw this when we have no idea what sort of thing the user means for
     // their script to do.
     class ParsingError : public TranslationError {
     public:
         ParsingError();
     };
 
-    // Constructs a ParsingError. There is no information to give the user, so
-    // no arguments are accepted.
+    // Constructs a ParsingError. There isn't any specific information to give
+    // the user, so no arguments are accepted.
     ParsingError::ParsingError() : TranslationError{"Parsing error"}
     {
     }
 
-    // Throw this when the user's script had the correct basic syntax but
-    // contained an unrecognized instruction.
+    // Throw this when the user's script has the correct basic syntax but
+    // contains an unrecognized instruction.
     class AssemblyError : public TranslationError {
     public:
         explicit AssemblyError(char bad_instruction);
