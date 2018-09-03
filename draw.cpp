@@ -271,12 +271,12 @@ namespace {
         // Constructs an assembler with the default instruction set.
         Assembler();
 
-        // Displays the documentation for each instruction.
-        void help() const;
-
         // Reads "assembly language" from an input stream and assembles it.
         [[nodiscard]]
         std::vector<Opcode> operator()(std::istringstream& in) const;
+
+        // Displays the documentation for each instruction.
+        friend std::ostream& operator<<(std::ostream& out, const Assembler& as);
 
     private:
         std::vector<Instruction> instruction_set_;
@@ -297,37 +297,7 @@ namespace {
         {"move northeast",          "o9",   &Canvas::northeast},
         {"move northwest",          "i7",   &Canvas::northwest},
         {"move southeast",          "l3",   &Canvas::southeast},
-        {"move southwest",          "k1",   &Canvas::southwest}
-    } { }
-
-    void Assembler::help() const
-    {
-        constexpr auto margin = "    ";
-        const auto doc_heading = "DESCRIPTION"sv;
-
-        const auto doc_width = [&]() {
-            auto acc = size(doc_heading);
-            for (const auto& instruction : instruction_set_)
-                acc = std::max(acc, size(instruction.doc));
-            return static_cast<int>(acc);
-        }();
-
-        std::cout << margin << std::left << std::setw(doc_width) << doc_heading
-                  << margin << "symbol(s)\n\n";
-
-        for (const auto& instruction : instruction_set_) {
-            std::cout << margin << std::setw(doc_width) << instruction.doc;
-            std::cout << margin;
-
-            auto sep = "";
-            for (const auto ch : instruction.chars) {
-                std::cout << sep << ch;
-                sep = ", ";
-            }
-
-            std::cout << '\n';
-        }
-    }
+        {"move southwest",          "k1",   &Canvas::southwest}} { }
 
     std::vector<Opcode> Assembler::operator()(std::istringstream& in) const
     {
@@ -350,9 +320,39 @@ namespace {
         return ret;
     }
 
+    std::ostream& operator<<(std::ostream& out, const Assembler& as)
+    {
+        constexpr auto margin = "    ";
+        const auto doc_heading = "DESCRIPTION"sv;
+
+        const auto doc_width = [&]() {
+            auto acc = size(doc_heading);
+            for (const auto& instruction : as.instruction_set_)
+                acc = std::max(acc, size(instruction.doc));
+            return static_cast<int>(acc);
+        }();
+
+        out << margin << std::left << std::setw(doc_width) << doc_heading
+            << margin << "symbol(s)\n\n";
+
+        for (const auto& instruction : as.instruction_set_) {
+            out << margin << std::setw(doc_width) << instruction.doc << margin;
+
+            auto sep = "";
+            for (const auto ch : instruction.chars) {
+                out << sep << ch;
+                sep = ", ";
+            }
+
+            out << '\n';
+        }
+
+        return out;
+    }
+
     std::optional<std::istringstream> read_script_as_stream()
     {
-        std::cout << "\n? ";
+        std::cerr << "\n? ";
         std::string script;
         if (getline(std::cin, script)) return std::istringstream{script};
         return std::nullopt;
@@ -394,14 +394,14 @@ int main()
 {
     std::ios_base::sync_with_stdio(false);
 
-    Assembler assemble;
+    const Assembler assemble;
     Canvas canvas;
     canvas.draw();
 
     while (auto in = read_script_as_stream()) {
         try {
             if (help_requested(*in)) {
-                assemble.help();
+                std::cerr << assemble;
             } else {
                 interpret_and_run(canvas, assemble, *in);
             }
