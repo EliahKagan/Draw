@@ -321,7 +321,7 @@ namespace {
         return ret;
     }
 
-    std::tuple<std::string_view, int>
+    [[nodiscard]] std::tuple<std::string_view, int>
     doc_heading_and_width(const std::vector<Instruction>& instruction_set)
     {
         const auto doc_heading = "DESCRIPTION"sv;
@@ -334,30 +334,28 @@ namespace {
         return {doc_heading, static_cast<int>(width)};
     }
 
+    void output_chars(std::ostream& out, const std::string_view chars)
+    {
+        auto sep = "";
+        for (const auto ch : chars) {
+            out << sep << ch;
+            sep = ", ";
+        }
+    }
+
     std::ostream& operator<<(std::ostream& out, const Assembler& as)
     {
         constexpr auto margin = "    ";
-        const auto doc_heading = "DESCRIPTION"sv;
 
-        const auto doc_width = [&]() {
-            auto acc = size(doc_heading);
-            for (const auto& instruction : as.instruction_set_)
-                acc = std::max(acc, size(instruction.doc));
-            return static_cast<int>(acc);
-        }();
+        const auto [doc_heading, doc_width] =
+                doc_heading_and_width(as.instruction_set_);
 
         out << margin << std::left << std::setw(doc_width) << doc_heading
             << margin << "SYMBOL(s)\n\n";
 
         for (const auto& instruction : as.instruction_set_) {
             out << margin << std::setw(doc_width) << instruction.doc << margin;
-
-            auto sep = "";
-            for (const auto ch : instruction.chars) {
-                out << sep << ch;
-                sep = ", ";
-            }
-
+            output_chars(out, instruction.chars);
             out << '\n';
         }
 
