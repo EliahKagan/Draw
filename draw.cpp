@@ -378,7 +378,7 @@ namespace {
 
     void show_quick_help()
     {
-        std::cerr << "Use \"?\" or \"\\h\" for help, and \\q to quit.\n";
+        std::cerr << "Use \"?\" or \"\\h\" for help, and \"\\q\" to quit.\n";
     }
 
     void show_help(const Assembler& assemble)
