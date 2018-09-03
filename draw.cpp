@@ -1,4 +1,4 @@
-// Very limited turtle graphics program.
+// Very limited turtle-like (but orientation-less) graphics program.
 
 #include <algorithm>
 #include <cstdlib>
