@@ -490,7 +490,7 @@ namespace {
         std::cerr << "To repeat an instruction N times,"
                      " put \\N at the beginning of the line.\n";
         std::cerr << "If the next symbol is also a numeral,"
-                     " type a space (or tab) before it.\n";
+                     " type a space (or tab) before it.\n\n";
         show_quick_help();
     }
 
