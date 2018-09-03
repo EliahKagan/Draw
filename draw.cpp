@@ -1,7 +1,7 @@
 // Very limited turtle graphics program.
 
 #include <algorithm>
-#include <cstddef>
+#include <cstdlib>
 #include <deque>
 #include <initializer_list>
 #include <iomanip>
@@ -14,6 +14,7 @@
 #include <string_view>
 #include <tuple>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace {
@@ -379,7 +380,7 @@ namespace {
                      " type a space (or tab) before it.\n";
     }
 
-    std::optional<std::istringstream> read_script_as_stream()
+    [[nodiscard]] std::optional<std::istringstream> read_script_as_stream()
     {
         std::cerr << "\n? ";
         std::string script;
@@ -387,18 +388,38 @@ namespace {
         return std::nullopt;
     }
 
-    bool help_requested(std::istringstream& in)
-    {
-        const auto ret = in.get() == '?';
-        in.unget();
-        return ret;
-    }
+    namespace specials { // TODO: Can these be constexpr?
+        const struct HelpTag { } help;
+        const struct QuitTag { } quit;
+    };
 
-    int extract_reps(std::istringstream& in)
+    [[nodiscard]] std::variant<int, specials::HelpTag, specials::QuitTag>
+    extract_reps_or_special_action(std::istringstream& in)
     {
-        if (in.get() != '\\') {
+        switch (in.get()) {
+        case '?':
+            return specials::help;
+
+        case '\\':
+            break;
+
+        default:
             in.unget();
             return 1;
+        }
+
+        switch (in.get()) {
+        case 'h':
+        case 'H':
+        case '?':
+            return specials::help;
+
+        case 'q':
+        case 'Q':
+            return specials::quit;
+
+        default:
+            in.unget();
         }
 
         int ret {};
@@ -406,6 +427,7 @@ namespace {
         return ret;
     }
 
+    // FIXME: remove or heavily refactor
     void interpret_and_run(Canvas& canvas, const Assembler& assemble,
                            std::istringstream& in)
     {
@@ -430,10 +452,14 @@ int main()
 
     while (auto in = read_script_as_stream()) {
         try {
-            if (help_requested(*in))
+            const auto lede = extract_reps_or_special_action(*in);
+
+            ////
+            if (help_requested(*in)) {
                 show_help(assemble);
-            else
+            } else {
                 interpret_and_run(canvas, assemble, *in);
+            }
         }
         catch (const TranslationError& e) {
             std::cerr << e.what() << '\n';
