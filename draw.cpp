@@ -91,7 +91,7 @@ namespace {
         // Shortens the canvas by removing rows below the cursor.
         void crop_below() noexcept;                                 // b
 
-        // Shortens the canvas by removing blank upper and lower rows.
+        // Shortens the canvas by removing empty upper and lower rows.
         void trim() noexcept;                                       // t
 
         // ^^^ END OF INSTRUCTIONS ^^^
@@ -143,8 +143,14 @@ namespace {
         // Shortens the canvas by removing rows below the given y-coordinate.
         void remove_below(std::size_t y) noexcept;
 
+        // Shortens the canvas by removing empty upper rows.
+        void trim_top() noexcept;
+
+        // Shortens the canvas by removing empty lower rows.
+        void trim_bottom() noexcept;
+
         // Tells if all cells of a given y-coordinate are currently unmarked.
-        bool blank_row(std::size_t y) const noexcept;
+        [[nodiscard]] bool blank_row(std::size_t y) const noexcept;
 
         // The grid holding the pattern recorded on the canvas, stored as rows.
         std::deque<std::deque<bool>> rows_;
@@ -252,6 +258,22 @@ namespace {
         update();
     }
 
+    void Canvas::crop_above() noexcept
+    {
+        remove_above(y_);
+    }
+
+    void Canvas::crop_below() noexcept
+    {
+        remove_below(y_);
+    }
+
+    void Canvas::trim() noexcept
+    {
+        trim_bottom();
+        trim_top();
+    }
+
     // Draws the pattern of foreground dots that are recorded on the canvas.
     std::ostream& operator<<(std::ostream& out, const Canvas& canvas)
     {
@@ -342,6 +364,7 @@ namespace {
     {
         assert(y < size(rows_));
         rows_.erase(cbegin(rows_), cbegin(rows_) + y);
+        y_ -= y;
     }
 
     void Canvas::remove_below(const std::size_t y) noexcept
@@ -350,12 +373,26 @@ namespace {
         rows_.resize(y + 1u);
     }
 
+    void Canvas::trim_top() noexcept
+    {
+        std::size_t y {0u};
+        while (y != y_ && blank_row(y)) ++y;
+        remove_above(y);
+    }
+
+    void Canvas::trim_bottom() noexcept
+    {
+        std::size_t y {size(rows_) - 1u};
+        while (y != y_ && blank_row(y)) --y;
+        remove_below(y);
+    }
+
     bool Canvas::blank_row(const std::size_t y) const noexcept
     {
         const auto& row = rows_.at(y);
 
         return std::none_of(cbegin(row), cend(row),
-                            [](const auto item) { return item; });
+                            [](const auto elem) { return elem; });
     }
 
     // Abstract base class for exceptions to throw when a user-provided script
