@@ -20,9 +20,8 @@
 namespace {
     using namespace std::literals;
 
-    // Collects lambdas or other user-defined functors together to produce a new
-    // functor with each of them as a separate overload as its call operator.
-    // Sometimes facilitates terse, clear calls to std::visit on a std::variant.
+    // Collects lambdas (or other functors) to use as overloads for a new
+    // functor's function call operator. Useful for std::visit.
     // See "overloaded" in http://stroustrup.com/tour2.html, p. 176.
     template<typename... Fs>
     class MultiLambda : public Fs... {
@@ -30,8 +29,7 @@ namespace {
         using Fs::operator()...;
     };
 
-    // Deduces base classes from the types of functors passed in aggregate
-    // initialization. (Each of their call operators' signatures should differ.)
+    // Use each functor as a base-class subobject. Their signatures must differ.
     template<typename... Fs>
     MultiLambda(Fs...) -> MultiLambda<Fs...>;
 
