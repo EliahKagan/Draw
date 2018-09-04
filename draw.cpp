@@ -576,7 +576,7 @@ namespace {
         std::cout << canvas;
     }
 
-    // Main loop. Runs user's commands. Displays canvas except on error.
+    // Main loop. Runs the user's commands. Displays the canvas except on error.
     void repl(const Assembler& as, Canvas& canvas)
     {
         while (auto in = read_script_as_stream()) {
