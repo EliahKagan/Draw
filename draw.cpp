@@ -49,16 +49,16 @@ namespace {
         // INSTRUCTIONS:                                           NAMES:
 
         // Makes a dot at the current position.
-        void mark();                                            // m
+        void mark() noexcept;                                   // m
 
         // Erases a dot at the current position.
-        void clean();                                           // c
+        void clean() noexcept;                                  // c
 
         // Takes the pen up (i.e., stops auto-marking).
-        void up();                                              // u
+        void up() noexcept;                                     // u
 
         // Puts the pen down (i.e, starts auto-marking).
-        void down();                                            // d
+        void down() noexcept;                                   // d
 
         // Moves the pen north (upward on the screen).
         void north();                                           // n, 8
@@ -84,26 +84,38 @@ namespace {
         // Moves the pen southwest (down-left on the screen).
         void southwest();                                       // k, 1
 
+        // Resize the canvas to remove the portion above here.
+        //void crop_above();                                      // a
+
+        // Resize the canvas to remove the portion below here.
+        //void crop_below();                                      // b
+
         // ^^^ END OF INSTRUCTIONS ^^^
 
         friend std::ostream& operator<<(std::ostream& out,
                                         const Canvas& canvas);
 
     private:
+        // These helpers use at() for bounds checking, to mitigate possible
+        // bugs. But we don't catch std::out_of_range. Program termination, as
+        // occurs when an exception would propogate out of a noexcept function,
+        // is the least bad of all possible behaviors in such a situation.
+
         // The cell at the given coordinates (for reading).
-        [[nodiscard]] const bool& cell(std::size_t x, std::size_t y) const;
+        [[nodiscard]]
+        const bool& cell(std::size_t x, std::size_t y) const noexcept;
 
         // The cell at the given coordinates (for reading or writing).
-        [[nodiscard]] bool& cell(std::size_t x, std::size_t y);
+        [[nodiscard]] bool& cell(std::size_t x, std::size_t y) noexcept;
 
         // The cell at the current position (for reading).
-        [[nodiscard, maybe_unused]] const bool& here() const;
+        [[nodiscard, maybe_unused]] const bool& here() const noexcept;
 
         // The cell at the current position (for reading or writing).
-        [[nodiscard]] bool& here();
+        [[nodiscard]] bool& here() noexcept;
 
         // The symbolic representation for the cell at the given coordinates.
-        [[nodiscard]] char peek(std::size_t x, std::size_t y) const;
+        [[nodiscard]] char peek(std::size_t x, std::size_t y) const noexcept;
 
         // Moves north, but does not call any updaters.
         void move_north();
@@ -154,22 +166,22 @@ namespace {
         if (width == 0) throw std::length_error{"zero-width canvas vanishes"};
     }
 
-    void Canvas::mark()
+    void Canvas::mark() noexcept
     {
         here() = true;
     }
 
-    void Canvas::clean()
+    void Canvas::clean() noexcept
     {
         here() = false;
     }
 
-    void Canvas::up()
+    void Canvas::up() noexcept
     {
         pen_ = Pen::up;
     }
 
-    void Canvas::down()
+    void Canvas::down() noexcept
     {
         pen_ = Pen::down;
         mark();
@@ -241,27 +253,28 @@ namespace {
     }
 
     inline const bool& Canvas::cell(const std::size_t x,
-                                    const std::size_t y) const
+                                    const std::size_t y) const noexcept
     {
         return rows_.at(y).at(x);
     }
 
-    inline bool& Canvas::cell(const std::size_t x, const std::size_t y)
+    inline bool& Canvas::cell(const std::size_t x, const std::size_t y) noexcept
     {
         return rows_.at(y).at(x);
     }
 
-    inline const bool& Canvas::here() const
+    inline const bool& Canvas::here() const noexcept
     {
         return cell(x_, y_);
     }
 
-    inline bool& Canvas::here()
+    inline bool& Canvas::here() noexcept
     {
         return cell(x_, y_);
     }
 
-    inline char Canvas::peek(const std::size_t x, const std::size_t y) const
+    inline char
+    Canvas::peek(const std::size_t x, const std::size_t y) const noexcept
     {
         if (y == y_ && x == x_) return cur_;
 
@@ -600,13 +613,19 @@ int main()
 {
     std::ios_base::sync_with_stdio(false);
 
-    const Assembler as;
+    try {
+        const Assembler as;
 
-    show_quick_help();
-    std::cerr << '\n';
+        show_quick_help();
+        std::cerr << '\n';
 
-    Canvas canvas;
-    std::cout << canvas;
+        Canvas canvas;
+        std::cout << canvas;
 
-    repl(as, canvas);
+        repl(as, canvas);
+    }
+    catch (const std::bad_alloc&) {
+        std::cerr << "Out of memory!\n";
+        return EXIT_FAILURE;
+    }
 }
