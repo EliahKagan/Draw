@@ -575,9 +575,27 @@ namespace {
 
         std::cout << canvas;
     }
+
+    // Main loop. Runs user's commands. Displays canvas except on error.
+    void repl(const Assembler& as, Canvas& canvas)
+    {
+        while (auto in = read_script_as_stream()) {
+            try {
+                visit(MultiLambda{
+                    [&](const int reps) { execute(canvas, as(*in), reps); },
+                    [&](specials::HelpTag) { show_help(as); },
+                    [](specials::QuitTag) { quit(EXIT_SUCCESS, "Bye!"); }
+                }, extract_reps_or_special_action(*in));
+            }
+            catch (const TranslationError& e) {
+                std::cerr << e.what() << '\n';
+                show_quick_help();
+            }
+        }
+    }
 }
 
-// Provides a REPL that displays the canvas except when there is an error.
+// Makes an assembler and canvas, displays initial output, and enters REPL.
 int main()
 {
     std::ios_base::sync_with_stdio(false);
@@ -590,17 +608,5 @@ int main()
     Canvas canvas;
     std::cout << canvas;
 
-    while (auto in = read_script_as_stream()) {
-        try {
-            visit(MultiLambda{
-                [&](const int reps) { execute(canvas, as(*in), reps); },
-                [&](specials::HelpTag) { show_help(as); },
-                [](specials::QuitTag) { quit(EXIT_SUCCESS, "Bye!"); }
-            }, extract_reps_or_special_action(*in));
-        }
-        catch (const TranslationError& e) {
-            std::cerr << e.what() << '\n';
-            show_quick_help();
-        }
-    }
+    repl(as, canvas);
 }
