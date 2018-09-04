@@ -384,7 +384,7 @@ namespace {
 
         // Reads "assembly language" from an input stream and assembles it.
         [[nodiscard]]
-        std::vector<Opcode> operator()(std::istringstream& in) const;
+        std::vector<Opcode> operator()(std::istream& in) const;
 
         friend std::ostream& operator<<(std::ostream& out, const Assembler& as);
 
@@ -416,7 +416,7 @@ namespace {
     {
     }
 
-    std::vector<Opcode> Assembler::operator()(std::istringstream& in) const
+    std::vector<Opcode> Assembler::operator()(std::istream& in) const
     {
         std::vector<Opcode> ret;
 
@@ -526,7 +526,7 @@ namespace {
     }
 
     // Extracts an integer from a stream and tries to use it as a rep-count.
-    [[nodiscard]] int extract_reps(std::istringstream& in)
+    [[nodiscard]] int extract_reps(std::istream& in)
     {
         int reps {};
         if (!(in >> reps) || reps < 0) throw ParsingError{};
@@ -537,7 +537,7 @@ namespace {
     // a custom repetition count for the instructions int he rest of their
     // script, or to view the full help message or quit the program.
     [[nodiscard]] std::variant<int, specials::HelpTag, specials::QuitTag>
-    extract_reps_or_special_action(std::istringstream& in)
+    extract_reps_or_special_action(std::istream& in)
     {
         switch (in.get()) {
         case '?':
@@ -545,18 +545,18 @@ namespace {
 
         case '\\':
             switch (in.get()) {
-            case 'h':
-            case 'H':
-            case '?':
-                return specials::help;
+                case 'h':
+                case 'H':
+                case '?':
+                    return specials::help;
 
-            case 'q':
-            case 'Q':
-                return specials::quit;
+                case 'q':
+                case 'Q':
+                    return specials::quit;
 
-            default:
-                in.unget();
-                return extract_reps(in);
+                default:
+                    in.unget();
+                    return extract_reps(in);
             }
 
         default:
