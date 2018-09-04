@@ -525,6 +525,14 @@ namespace {
         constexpr struct QuitTag { } quit;
     }
 
+    // Extracts an integer from a stream and tries to use it as a rep-count.
+    [[nodiscard]] int extract_reps(std::istringstream& in)
+    {
+        int reps {};
+        if (!(in >> reps) || reps < 0) throw ParsingError{};
+        return reps;
+    }
+
     // Interprets leading-backslash notation, which the user may use to provide
     // a custom repetition count for the instructions int he rest of their
     // script, or to view the full help message or quit the program.
@@ -536,30 +544,25 @@ namespace {
             return specials::help;
 
         case '\\':
-            break;
+            switch (in.get()) {
+            case 'h':
+            case 'H':
+            case '?':
+                return specials::help;
+
+            case 'q':
+            case 'Q':
+                return specials::quit;
+
+            default:
+                in.unget();
+                return extract_reps(in);
+            }
 
         default:
             in.unget();
             return 1;
         }
-
-        switch (in.get()) {
-        case 'h':
-        case 'H':
-        case '?':
-            return specials::help;
-
-        case 'q':
-        case 'Q':
-            return specials::quit;
-
-        default:
-            in.unget();
-        }
-
-        int ret {};
-        if (!(in >> ret) || ret < 0) throw ParsingError{};
-        return ret;
     }
 
     // Execute assembled opcodes on a canvas a specified number of times.
