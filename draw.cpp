@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
 #include <deque>
 #include <initializer_list>
@@ -363,7 +364,10 @@ namespace {
     void Canvas::remove_above(const std::size_t y) noexcept
     {
         assert(y < size(rows_));
-        rows_.erase(cbegin(rows_), cbegin(rows_) + y);
+
+        rows_.erase(cbegin(rows_),
+                    cbegin(rows_) + static_cast<std::ptrdiff_t>(y));
+
         y_ -= y;
     }
 
