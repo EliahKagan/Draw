@@ -80,6 +80,8 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "xthread": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     }
 }

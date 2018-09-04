@@ -1,6 +1,7 @@
 // Very limited turtle-like graphics program. (The turtle has no orientation.)
 
 #include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <deque>
 #include <initializer_list>
@@ -46,49 +47,52 @@ namespace {
         explicit Canvas(std::size_t width = 70u, char bg = ' ', char fg = '*',
                         char cur = 'X', Pen pen = Pen::up);
 
-        // INSTRUCTIONS:                                           NAMES:
+        // INSTRUCTIONS:                                               NAMES:
 
         // Makes a dot at the current position.
-        void mark() noexcept;                                   // m
+        void mark() noexcept;                                       // m
 
         // Erases a dot at the current position.
-        void clean() noexcept;                                  // c
+        void clean() noexcept;                                      // c
 
         // Takes the pen up (i.e., stops auto-marking).
-        void up() noexcept;                                     // u
+        void up() noexcept;                                         // u
 
         // Puts the pen down (i.e, starts auto-marking).
-        void down() noexcept;                                   // d
+        void down() noexcept;                                       // d
 
         // Moves the pen north (upward on the screen).
-        void north();                                           // n, 8
+        void north();                                               // n, 8
 
         // Moves the pen south (downward on the screen).
-        void south();                                           // s, 2
+        void south();                                               // s, 2
 
         // Moves the pen east (right on the screen).
-        void east();                                            // e, 6
+        void east();                                                // e, 6
 
         // Moves the pen west (left on the screen).
-        void west();                                            // w, 4
+        void west();                                                // w, 4
 
         // Moves the pen northeast (up-right on the screen).
-        void northeast();                                       // o, 9
+        void northeast();                                           // o, 9
 
         // Moves the pen northwest (up-left on the screen).
-        void northwest();                                       // i, 7
+        void northwest();                                           // i, 7
 
         // Moves the pen southeast (down-right on the screen).
-        void southeast();                                       // l, 3
+        void southeast();                                           // l, 3
 
         // Moves the pen southwest (down-left on the screen).
-        void southwest();                                       // k, 1
+        void southwest();                                           // k, 1
 
-        // Resize the canvas to remove the portion above here.
-        //void crop_above();                                      // a
+        // Shortens the canvas by removing rows above the cursor.
+        void crop_above() noexcept;                                 // a
 
-        // Resize the canvas to remove the portion below here.
-        //void crop_below();                                      // b
+        // Shortens the canvas by removing rows below the cursor.
+        void crop_below() noexcept;                                 // b
+
+        // Shortens the canvas by removing blank upper and lower rows.
+        void trim() noexcept;                                       // t
 
         // ^^^ END OF INSTRUCTIONS ^^^
 
@@ -132,6 +136,15 @@ namespace {
         // Performs whatever actions should be done after each complete change
         // of cursor position. Currently, this just marks (if the pen is down).
         void update();
+
+        // Shortens the canvas by removing rows above the given y-coordinate.
+        void remove_above(std::size_t y) noexcept;
+
+        // Shortens the canvas by removing rows below the given y-coordinate.
+        void remove_below(std::size_t y) noexcept;
+
+        // Tells if all cells of a given y-coordinate are currently unmarked.
+        bool blank_row(std::size_t y) const noexcept;
 
         // The grid holding the pattern recorded on the canvas, stored as rows.
         std::deque<std::deque<bool>> rows_;
@@ -325,6 +338,26 @@ namespace {
         if (pen_ == Pen::down) mark();
     }
 
+    void Canvas::remove_above(const std::size_t y) noexcept
+    {
+        assert(y < size(rows_));
+        rows_.erase(cbegin(rows_), cbegin(rows_) + y);
+    }
+
+    void Canvas::remove_below(const std::size_t y) noexcept
+    {
+        assert(y < size(rows_));
+        rows_.resize(y + 1u);
+    }
+
+    bool Canvas::blank_row(const std::size_t y) const noexcept
+    {
+        const auto& row = rows_.at(y);
+
+        return std::none_of(cbegin(row), cend(row),
+                            [](const auto item) { return item; });
+    }
+
     // Abstract base class for exceptions to throw when a user-provided script
     // contains an error that prevents it from being assembled or otherwise
     // used.
@@ -414,18 +447,21 @@ namespace {
     }
 
     Assembler::Assembler() : Assembler{
-        {"Mark the canvas here",    "m",    &Canvas::mark},
-        {"Clean any mark here",     "c",    &Canvas::clean},
-        {"take the pen Up",         "u",    &Canvas::up},
-        {"put the pen Down",        "d",    &Canvas::down},
-        {"move North",              "n8",   &Canvas::north},
-        {"move South",              "s2",   &Canvas::south},
-        {"move East",               "e6",   &Canvas::east},
-        {"move West",               "w4",   &Canvas::west},
-        {"move northeast",          "o9",   &Canvas::northeast},
-        {"move northwest",          "i7",   &Canvas::northwest},
-        {"move southeast",          "l3",   &Canvas::southeast},
-        {"move southwest",          "k1",   &Canvas::southwest}}
+        {"Mark the canvas here",        "m",    &Canvas::mark},
+        {"Clean any mark here",         "c",    &Canvas::clean},
+        {"take the pen Up",             "u",    &Canvas::up},
+        {"put the pen Down",            "d",    &Canvas::down},
+        {"move North",                  "n8",   &Canvas::north},
+        {"move South",                  "s2",   &Canvas::south},
+        {"move East",                   "e6",   &Canvas::east},
+        {"move West",                   "w4",   &Canvas::west},
+        {"move northeast",              "o9",   &Canvas::northeast},
+        {"move northwest",              "i7",   &Canvas::northwest},
+        {"move southeast",              "l3",   &Canvas::southeast},
+        {"move southwest",              "k1",   &Canvas::southwest},
+        {"crop out Above this row",     "a",    &Canvas::crop_above},
+        {"crop out Below this row",     "b",    &Canvas::crop_below},
+        {"trim off top and bottom",     "t",    &Canvas::trim}}
     {
     }
 
