@@ -1,13 +1,14 @@
 # CMake build directory for VS Code and manual (non-IDE) builds.
 build/
 
-# Visual Studio metadata.  TODO: Does _none_ of this need syncing?
+# Visual Studio metadata.
 .vs/
 
-# Automatically generated files from manual MinGW builds.
-draw.plist
+# Automatically generated files from manual builds.
+draw
 draw.exe
 draw.obj
 
-# Automatically generated fiels from manual MSVC++ builds.
+# Automatically generated files from manual static analysis.
+draw.plist
 draw.nativecodeanalysis.xml
