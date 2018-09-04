@@ -595,7 +595,7 @@ namespace {
     }
 }
 
-// Makes an assembler and canvas, displays initial output, and enters REPL.
+// Makes an assembler and canvas, displays initial output, and enters the REPL.
 int main()
 {
     std::ios_base::sync_with_stdio(false);
