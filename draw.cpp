@@ -539,6 +539,8 @@ namespace {
     [[nodiscard]] std::variant<int, specials::HelpTag, specials::QuitTag>
     extract_reps_or_special_action(std::istream& in)
     {
+        in >> std::ws;
+
         switch (in.get()) {
         case '?':
             return specials::help;
