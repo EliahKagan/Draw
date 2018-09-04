@@ -395,6 +395,12 @@ namespace {
     {
         const auto& row = rows_.at(y);
 
+        // Checking the whole row is simpler than having Canvas separately store
+        // population counts for each row, and typical use shouldn't involve
+        // canvases big enough for this to be slow. But if other features are
+        // later added that would also benefit from such counts (e.g., moving
+        // the cursor to the center of the smallest rectangle enclosing the
+        // whole image), it may then make sense to implement it and use it here.
         return std::none_of(cbegin(row), cend(row),
                             [](const auto elem) { return elem; });
     }
