@@ -489,9 +489,9 @@ namespace {
     }
 
     // Tells the user how to do perform just about every supported action.
-    void show_help(const Assembler& assemble)
+    void show_help(const Assembler& as)
     {
-        std::cerr << assemble << '\n';
+        std::cerr << as << '\n';
         std::cerr << "To repeat an instruction N times,"
                      " put \\N at the beginning of the line.\n";
         std::cerr << "If the next symbol is also a numeral,"
@@ -582,7 +582,7 @@ int main()
 {
     std::ios_base::sync_with_stdio(false);
 
-    const Assembler assemble;
+    const Assembler as;
 
     show_quick_help();
     std::cerr << '\n';
@@ -593,8 +593,8 @@ int main()
     while (auto in = read_script_as_stream()) {
         try {
             visit(MultiLambda{
-                [&](const int reps) { execute(canvas, assemble(*in), reps); },
-                [&](specials::HelpTag) { show_help(assemble); },
+                [&](const int reps) { execute(canvas, as(*in), reps); },
+                [&](specials::HelpTag) { show_help(as); },
                 [](specials::QuitTag) { quit(EXIT_SUCCESS, "Bye!"); }
             }, extract_reps_or_special_action(*in));
         }
