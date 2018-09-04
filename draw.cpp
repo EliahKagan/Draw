@@ -502,7 +502,7 @@ namespace {
         {"move southwest",              "k1",   &Canvas::southwest},
         {"crop out Above this row",     "a",    &Canvas::crop_above},
         {"crop out Below this row",     "b",    &Canvas::crop_below},
-        {"trim off top and bottom",     "t",    &Canvas::trim}}
+        {"Trim off top and bottom",     "t",    &Canvas::trim}}
     {
     }
 
