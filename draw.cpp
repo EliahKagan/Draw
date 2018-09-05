@@ -174,7 +174,7 @@ namespace {
         // The symbolic representation for the cursor itself.
         char cur_;
 
-        // The state the pen is currently in (whether it is up or down).
+        // The state the pen is currently in (i.e., whether it is up or down).
         Pen pen_;
     };
 
