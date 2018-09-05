@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/Draw",
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "terminal": "external"
         },
         {
             "name": "(gdb) Launch [Eliah]",
