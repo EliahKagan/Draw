@@ -1,6 +1,7 @@
 // draw.cpp - A very limited turtle-inspired text canvas.
 //
 // Written in 2018 by Eliah Kagan <degeneracypressure@gmail.com>.
+// Received a minor update in 2019.
 //
 // To the extent possible under law, the author(s) have dedicated all copyright
 // and related and neighboring rights to this software to the public domain
@@ -29,7 +30,7 @@
 #include <variant>
 #include <vector>
 
-namespace {
+    namespace {
     using namespace std::literals;
 
     // Collects lambdas (or other functors) to use as overloads for a new
