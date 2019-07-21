@@ -14,7 +14,7 @@
             "terminal": "external"
         },
         {
-            "name": "(gdb) Launch [Eliah]",
+            "name": "(gdb) Launch [MSYS2 on D:]",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/draw.exe",
@@ -34,7 +34,7 @@
             ]
         },
         {
-            "name": "(gdb) Launch [David]",
+            "name": "(gdb) Launch [MSYS2 on C:]",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/draw.exe",

@@ -84,5 +84,11 @@
         "*.ipp": "cpp",
         "queue": "cpp",
         "stack": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "Eliah",
+        "Kagan",
+        "degeneracypressure",
+        "gmail"
+    ]
 }

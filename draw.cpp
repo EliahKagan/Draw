@@ -1,4 +1,14 @@
-// Very limited turtle-like graphics program. (The turtle has no orientation.)
+// draw.cpp - A very limited turtle-inspired text canvas.
+//
+// Written in 2018 by Eliah Kagan <degeneracypressure@gmail.com>.
+//
+// To the extent possible under law, the author(s) have dedicated all copyright
+// and related and neighboring rights to this software to the public domain
+// worldwide. This software is distributed without any warranty.
+//
+// You should have received a copy of the CC0 Public Domain Dedication along
+// with this software. If not, see
+// <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 #include <algorithm>
 #include <cassert>
@@ -23,7 +33,7 @@ namespace {
     using namespace std::literals;
 
     // Collects lambdas (or other functors) to use as overloads for a new
-    // functor's function call operator. Useful for std::visit.
+    // function object's function call operator. Useful for std::visit.
     // See "overloaded" in http://stroustrup.com/tour2.html, p. 176.
     template<typename... Fs>
     class MultiLambda : public Fs... {
@@ -439,7 +449,7 @@ namespace {
     };
 
     // Constructs an AssemblyError from the unrecognized instruction. If there
-    // were mutliple unrecognized instructions, just pass the first one.
+    // were multiple unrecognized instructions, just pass the first one.
     AssemblyError::AssemblyError(const char bad_instruction)
         : TranslationError{"Assembly error: unrecognized instruction: \""s
                             + bad_instruction + "\""}
@@ -603,7 +613,7 @@ namespace {
     }
 
     // Prompts the user and reads a response, returning it as a stringstream to
-    // faciliate parsing. Returns std::nullopt only when stdin is end-of-input.
+    // facilitate parsing. Returns std::nullopt only when stdin is end-of-input.
     [[nodiscard]] std::optional<std::istringstream> read_script_as_stream()
     {
         std::cerr << "\n? ";
