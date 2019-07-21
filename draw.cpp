@@ -30,7 +30,7 @@
 #include <variant>
 #include <vector>
 
-    namespace {
+namespace {
     using namespace std::literals;
 
     // Collects lambdas (or other functors) to use as overloads for a new
